@@ -1,4 +1,4 @@
-FROM golang:1.24-alpine AS builder
+FROM golang:1.26.2-alpine AS builder
 
 WORKDIR /app
 
@@ -7,6 +7,7 @@ COPY common ./common
 COPY services/backoffice ./services/backoffice
 
 WORKDIR /app/services/backoffice
+ENV GOWORK=off
 RUN go mod download
 RUN CGO_ENABLED=0 go build -o /bin/backoffice ./main.go
 
