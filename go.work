@@ -2,7 +2,7 @@ go 1.26.2
 
 use (
     ./common
-    ./core
     ./services/auth-service
+    ./services/backoffice
     ./services/gateway
 )

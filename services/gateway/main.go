@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -19,22 +20,20 @@ func main() {
 	cfg := config.Load()
 	log := logger.New(cfg.ServiceName, cfg.LogLevel)
 
-	target, err := url.Parse(cfg.AuthServiceURL)
+	authTarget, err := url.Parse(cfg.AuthServiceURL)
 	if err != nil {
 		log.Error("invalid auth service URL", "error", err, "value", cfg.AuthServiceURL)
 		os.Exit(1)
 	}
 
-	proxy := httputil.NewSingleHostReverseProxy(target)
-	originalDirector := proxy.Director
-	proxy.Director = func(req *http.Request) {
-		originalDirector(req)
-		req.Host = target.Host
+	backofficeTarget, err := url.Parse(cfg.BackofficeServiceURL)
+	if err != nil {
+		log.Error("invalid backoffice service URL", "error", err, "value", cfg.BackofficeServiceURL)
+		os.Exit(1)
 	}
-	proxy.ErrorHandler = func(rw http.ResponseWriter, _ *http.Request, err error) {
-		log.Error("proxy error", "error", err)
-		http.Error(rw, "upstream unavailable", http.StatusBadGateway)
-	}
+
+	authProxy := newReverseProxy(authTarget, log, "auth-service")
+	backofficeProxy := newReverseProxy(backofficeTarget, log, "backoffice")
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {
@@ -42,8 +41,9 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{"status":"ok"}`))
 	})
-	mux.HandleFunc("POST /api/v1/auth/signup", proxy.ServeHTTP)
-	mux.HandleFunc("POST /api/v1/auth/login", proxy.ServeHTTP)
+	mux.HandleFunc("POST /api/v1/auth/signup", authProxy.ServeHTTP)
+	mux.HandleFunc("POST /api/v1/auth/login", authProxy.ServeHTTP)
+	mux.Handle("/api/v1/admin/", backofficeProxy)
 
 	server := &http.Server{
 		Addr:              cfg.HTTPAddr,
@@ -55,7 +55,12 @@ func main() {
 	defer stop()
 
 	go func() {
-		log.Info("gateway started", "addr", cfg.HTTPAddr, "auth_service_url", cfg.AuthServiceURL)
+		log.Info(
+			"gateway started",
+			"addr", cfg.HTTPAddr,
+			"auth_service_url", cfg.AuthServiceURL,
+			"backoffice_service_url", cfg.BackofficeServiceURL,
+		)
 		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Error("http server failed", "error", err)
 			stop()
@@ -73,4 +78,18 @@ func main() {
 	}
 
 	log.Info("gateway stopped")
+}
+
+func newReverseProxy(target *url.URL, log *slog.Logger, upstreamName string) *httputil.ReverseProxy {
+	proxy := httputil.NewSingleHostReverseProxy(target)
+	originalDirector := proxy.Director
+	proxy.Director = func(req *http.Request) {
+		originalDirector(req)
+		req.Host = target.Host
+	}
+	proxy.ErrorHandler = func(rw http.ResponseWriter, _ *http.Request, err error) {
+		log.Error("proxy error", "upstream", upstreamName, "error", err)
+		http.Error(rw, "upstream unavailable", http.StatusBadGateway)
+	}
+	return proxy
 }
