@@ -1,0 +1,8 @@
+1. Add backoffice service with clean architecture (domain/usecase/adapters).
+2. Introduce JWT validation middleware in gateway and backoffice using common/auth and dev-public.pem.
+3. Generate Go code from api/auth/v1/auth.proto and wire typed contracts in services.
+4. Add integration tests for signup/login flow through gateway.
+5. Add CI pipeline (lint, test, docker build) for all workspace modules.
+6. Add observability stack (Prometheus + Grafana/Loki) and request tracing.
+7. Add refresh tokens, logout, and password reset flows in auth-service.
+8. Add separate databases/schemas per service and migration pipelines.
