@@ -80,10 +80,19 @@ The repository currently runs:
 
 ### Gateway routes
 
+- `GET /` (navigation page to service playgrounds)
 - `GET /healthz`
+- `GET /status` (HTML page with connected service status)
+- `GET /status/services` (JSON status for connected services)
 - `POST /api/v1/auth/signup`
 - `POST /api/v1/auth/login`
 - `GET /api/v1/admin/status` (proxied to `backoffice`)
+- `GET /api/v1/admin/admins` (proxied to `backoffice`)
+
+### Service playground pages
+
+- `http://localhost:8081/` (auth-service playground for signup/login)
+- `http://localhost:8082/` (backoffice playground for status/admin listing)
 
 ### Backoffice environment variables
 

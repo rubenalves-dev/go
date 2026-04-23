@@ -12,6 +12,7 @@ import (
 
 	"raiiaa.dev/common/logger"
 	httpadapter "raiiaa.dev/services/backoffice/internal/adapters/http"
+	"raiiaa.dev/services/backoffice/internal/adapters/memory"
 	"raiiaa.dev/services/backoffice/internal/config"
 	"raiiaa.dev/services/backoffice/internal/usecase"
 )
@@ -27,8 +28,9 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	adminService := usecase.NewAdminService(cfg.ServiceName, usecase.SystemClock{})
-	handler := httpadapter.NewHandler(adminService, cfg.AdminRoutePrefix)
+	adminRepo := memory.NewAdminRepository()
+	adminService := usecase.NewAdminService(cfg.ServiceName, usecase.SystemClock{}, adminRepo)
+	handler := httpadapter.NewHandler(adminService, cfg.AdminRoutePrefix, log)
 
 	server := &http.Server{
 		Addr:              cfg.HTTPAddr,
