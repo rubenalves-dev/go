@@ -28,7 +28,24 @@ services:
         "-path",
         "/migrations",
         "-database",
-        "postgres://app:app@postgres:5432/authdb?sslmode=disable",
+        "postgres://app:app@postgres:5432/authdb?sslmode=disable&x-migrations-table=auth_schema_migrations",
+        "up",
+      ]
+    restart: "no"
+
+  backoffice-migrate:
+    image: migrate/migrate:v4.18.3
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./services/backoffice/migrations:/migrations:ro
+    command:
+      [
+        "-path",
+        "/migrations",
+        "-database",
+        "postgres://app:app@postgres:5432/authdb?sslmode=disable&x-migrations-table=backoffice_schema_migrations",
         "up",
       ]
     restart: "no"
@@ -77,10 +94,16 @@ services:
     build:
       context: .
       dockerfile: ./services/backoffice/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+      backoffice-migrate:
+        condition: service_completed_successfully
     environment:
       SERVICE_NAME: backoffice
       LOG_LEVEL: info
       HTTP_ADDR: :8082
+      DATABASE_URL: postgres://app:app@postgres:5432/authdb?sslmode=disable
       ADMIN_ROUTE_PREFIX: /api/v1/admin
     ports:
       - "8082:8082"

@@ -10,9 +10,11 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgxpool"
+
 	"raiiaa.dev/common/logger"
 	httpadapter "raiiaa.dev/services/backoffice/internal/adapters/http"
-	"raiiaa.dev/services/backoffice/internal/adapters/memory"
+	"raiiaa.dev/services/backoffice/internal/adapters/postgres"
 	"raiiaa.dev/services/backoffice/internal/config"
 	"raiiaa.dev/services/backoffice/internal/usecase"
 )
@@ -28,7 +30,14 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	adminRepo := memory.NewAdminRepository()
+	pool, err := pgxpool.New(ctx, cfg.DatabaseURL)
+	if err != nil {
+		log.Error("failed creating postgres pool", "error", err)
+		os.Exit(1)
+	}
+	defer pool.Close()
+
+	adminRepo := postgres.NewAdminRepository(pool)
 	adminService := usecase.NewAdminService(cfg.ServiceName, usecase.SystemClock{}, adminRepo)
 	handler := httpadapter.NewHandler(adminService, cfg.AdminRoutePrefix, log)
 

@@ -12,6 +12,7 @@ type Config struct {
 	ServiceName      string
 	LogLevel         string
 	HTTPAddr         string
+	DatabaseURL      string
 	AdminRoutePrefix string
 }
 
@@ -22,6 +23,7 @@ func Load() (Config, error) {
 		ServiceName:      getEnv("SERVICE_NAME", "backoffice"),
 		LogLevel:         getEnv("LOG_LEVEL", "info"),
 		HTTPAddr:         getEnv("HTTP_ADDR", ":8082"),
+		DatabaseURL:      os.Getenv("DATABASE_URL"),
 		AdminRoutePrefix: getEnv("ADMIN_ROUTE_PREFIX", "/api/v1/admin"),
 	}
 
@@ -30,6 +32,9 @@ func Load() (Config, error) {
 	}
 	if !strings.HasPrefix(cfg.AdminRoutePrefix, "/") {
 		return Config{}, errors.New("ADMIN_ROUTE_PREFIX must start with '/'")
+	}
+	if strings.TrimSpace(cfg.DatabaseURL) == "" {
+		return Config{}, errors.New("DATABASE_URL is required")
 	}
 
 	cfg.AdminRoutePrefix = strings.TrimRight(cfg.AdminRoutePrefix, "/")

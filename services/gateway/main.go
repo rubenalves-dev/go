@@ -103,7 +103,7 @@ func main() {
 	})
 	mux.HandleFunc("POST /api/v1/auth/signup", authProxy.ServeHTTP)
 	mux.HandleFunc("POST /api/v1/auth/login", authProxy.ServeHTTP)
-	mux.Handle("GET /api/v1/admin/", backofficeProxy)
+	mux.Handle("/api/v1/admin/", backofficeProxy)
 
 	server := &http.Server{
 		Addr:              cfg.HTTPAddr,

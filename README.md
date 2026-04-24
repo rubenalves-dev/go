@@ -88,6 +88,10 @@ The repository currently runs:
 - `POST /api/v1/auth/login`
 - `GET /api/v1/admin/status` (proxied to `backoffice`)
 - `GET /api/v1/admin/admins` (proxied to `backoffice`)
+- `POST /api/v1/admin/admins` (proxied to `backoffice`)
+- `GET /api/v1/admin/admins/{id}` (proxied to `backoffice`)
+- `PUT /api/v1/admin/admins/{id}` (proxied to `backoffice`)
+- `DELETE /api/v1/admin/admins/{id}` (proxied to `backoffice`)
 
 ### Service playground pages
 
@@ -99,6 +103,7 @@ The repository currently runs:
 - `SERVICE_NAME` (default: `backoffice`)
 - `LOG_LEVEL` (default: `info`)
 - `HTTP_ADDR` (default: `:8082`)
+- `DATABASE_URL` (required)
 - `ADMIN_ROUTE_PREFIX` (default: `/api/v1/admin`)
 
 ### Run locally
