@@ -1,13 +1,13 @@
-FROM golang:1.24-alpine AS builder
+FROM golang:1.26.2-alpine AS builder
 
 WORKDIR /app
 
 COPY go.work go.work.sum ./
 COPY common ./common
-COPY core ./core
 COPY services/auth-service ./services/auth-service
 
 WORKDIR /app/services/auth-service
+ENV GOWORK=off
 RUN go mod download
 RUN CGO_ENABLED=0 go build -o /bin/auth-service ./main.go
 

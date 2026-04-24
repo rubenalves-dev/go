@@ -66,3 +66,48 @@ Your template isn't "production-ready" until these cross-cutting concerns are ha
 4.  Write a `docker-compose.yml` that launches both, along with a Postgres instance.
 
 Once you can log in through the gateway and receive a JWT, your "Distributed Template" is officially alive.
+
+---
+
+## 6. Current Local Runtime
+
+The repository currently runs:
+
+- `auth-service` on `:8081`
+- `backoffice` on `:8082`
+- `gateway` on `:8080`
+- Postgres on `:5432`
+
+### Gateway routes
+
+- `GET /` (navigation page to service playgrounds)
+- `GET /healthz`
+- `GET /status` (HTML page with connected service status)
+- `GET /status/services` (JSON status for connected services)
+- `POST /api/v1/auth/signup`
+- `POST /api/v1/auth/login`
+- `GET /api/v1/admin/status` (proxied to `backoffice`)
+- `GET /api/v1/admin/admins` (proxied to `backoffice`)
+- `POST /api/v1/admin/admins` (proxied to `backoffice`)
+- `GET /api/v1/admin/admins/{id}` (proxied to `backoffice`)
+- `PUT /api/v1/admin/admins/{id}` (proxied to `backoffice`)
+- `DELETE /api/v1/admin/admins/{id}` (proxied to `backoffice`)
+
+### Service playground pages
+
+- `http://localhost:8081/` (auth-service playground for signup/login)
+- `http://localhost:8082/` (backoffice playground for status/admin listing)
+
+### Backoffice environment variables
+
+- `SERVICE_NAME` (default: `backoffice`)
+- `LOG_LEVEL` (default: `info`)
+- `HTTP_ADDR` (default: `:8082`)
+- `DATABASE_URL` (required)
+- `ADMIN_ROUTE_PREFIX` (default: `/api/v1/admin`)
+
+### Run locally
+
+```bash
+docker compose up --build
+```

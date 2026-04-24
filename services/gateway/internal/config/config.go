@@ -4,20 +4,22 @@ import "github.com/joho/godotenv"
 import "os"
 
 type Config struct {
-	ServiceName    string
-	LogLevel       string
-	HTTPAddr       string
-	AuthServiceURL string
+	ServiceName          string
+	LogLevel             string
+	HTTPAddr             string
+	AuthServiceURL       string
+	BackofficeServiceURL string
 }
 
 func Load() Config {
 	_ = godotenv.Load()
 
 	return Config{
-		ServiceName:    getEnv("SERVICE_NAME", "gateway"),
-		LogLevel:       getEnv("LOG_LEVEL", "info"),
-		HTTPAddr:       getEnv("HTTP_ADDR", ":8080"),
-		AuthServiceURL: getEnv("AUTH_SERVICE_URL", "http://auth-service:8081"),
+		ServiceName:          getEnv("SERVICE_NAME", "gateway"),
+		LogLevel:             getEnv("LOG_LEVEL", "info"),
+		HTTPAddr:             getEnv("HTTP_ADDR", ":8080"),
+		AuthServiceURL:       getEnv("AUTH_SERVICE_URL", "http://auth-service:8081"),
+		BackofficeServiceURL: getEnv("BACKOFFICE_SERVICE_URL", "http://backoffice:8082"),
 	}
 }
 
